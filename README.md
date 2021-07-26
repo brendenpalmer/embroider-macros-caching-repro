@@ -1,57 +1,16 @@
 # embroider-macros-caching-repro
 
-This README outlines the details of collaborating on this Ember application.
-A short introduction of this app could easily go here.
+This is a simple repo to help in reproducing a weird caching bug w/ `ember-engines` & `@embroider/macros`. The issue seems to be related to a previously cached macro being used incorrectly. For example, `ember-engines` uses `@embroider/macros` to have differing logic depending on `ember-source` version; in this case, it's possible for a previously cached version to be used for an incompatible `ember-source` version.
 
-## Prerequisites
+## Steps to reproduce
 
-You will need the following things properly installed on your computer.
+1. Clone repo, `yarn install`
+1. Run `ember b`
+1. Open `dist/assets/vendor.js`; the evaluated macro (specifically the one used in `link-to-external`) from `ember-engines` is correct
+1. Run `yarn add ember-source@3.24.0`
+1. Run `ember b`
+1. Open `dist/assets/vendor.js`; the evaluated macro (specifically the one used in `link-to-external`) from `ember-engines` is _incorrect_
+1. Run `CI=true ember b`
+1. Open `dist/assets/vendor.js`; notice that the evaluated macro (specifically the one used in `link-to-external`) is now different
 
-* [Git](https://git-scm.com/)
-* [Node.js](https://nodejs.org/)
-* [Yarn](https://yarnpkg.com/)
-* [Ember CLI](https://ember-cli.com/)
-* [Google Chrome](https://google.com/chrome/)
-
-## Installation
-
-* `git clone <repository-url>` this repository
-* `cd embroider-macros-caching-repro`
-* `yarn install`
-
-## Running / Development
-
-* `ember serve`
-* Visit your app at [http://localhost:4200](http://localhost:4200).
-* Visit your tests at [http://localhost:4200/tests](http://localhost:4200/tests).
-
-### Code Generators
-
-Make use of the many generators for code, try `ember help generate` for more details
-
-### Running Tests
-
-* `ember test`
-* `ember test --server`
-
-### Linting
-
-* `yarn lint`
-* `yarn lint:fix`
-
-### Building
-
-* `ember build` (development)
-* `ember build --environment production` (production)
-
-### Deploying
-
-Specify what it takes to deploy your app.
-
-## Further Reading / Useful Links
-
-* [ember.js](https://emberjs.com/)
-* [ember-cli](https://ember-cli.com/)
-* Development Browser Extensions
-  * [ember inspector for chrome](https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi)
-  * [ember inspector for firefox](https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/)
+In this state, if you build with `CI=true`, you'll get the correct macro condition being evaluated; however, if you build without `CI=true` you'll (seemingly) get the previously cached version being used.
